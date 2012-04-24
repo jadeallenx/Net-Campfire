@@ -20,7 +20,7 @@ use Net::HTTP::API;
     my @rooms = $cf->room_presence();
 
     $cf->speak( 
-        room_id => $room[0]->room_id, 
+        room_id => $rooms[0]->id, 
         message => "Hello world from Net::Campfire!"
     );
 
@@ -45,8 +45,6 @@ You must supply an C<api_username> for API calls.
 You must supply an C<api_base_url> so that API calls are directed to the right set of endpoints.
 
 =cut
-
-=head2 Messages
 
 =method speak()
 
@@ -87,6 +85,105 @@ net_api_method speak => (
     required => [qw(room_id, message)],
     authentication => 1,
     expected => [qw(201)],
+);
+
+=method highlight()
+
+This method highlights a message represented by the required C<message_id> parameter.
+
+=cut
+
+net_api_method highlight => (
+    description => 'Highlight a message',
+    method => 'POST',
+    path => '/messages/:message_id/star.xml',
+    params => [qw(message_id)],
+    required => [qw(message_id)],
+    authentication => 1,
+);
+
+=method unhighlight()
+
+This method removes a message highlight. Requires a C<message_id> parameters.
+
+=cut
+
+net_api_method highlight => (
+    description => 'Highlight a message',
+    method => 'DELETE',
+    path => '/messages/:message_id/star.xml',
+    params => [qw(message_id)],
+    required => [qw(message_id)],
+    authentication => 1,
+    expected => [qw(200)],
+);
+
+=method rooms()
+
+This method lists all of the rooms the authenticated user can see.  Returns an array of 
+hashrefs with the following keys:
+
+=over 4
+
+=item * id (integer)
+
+=item * name (string)
+
+=item * topic (string)
+
+=item * membership-limit (integer)
+
+=item * full (bool)
+
+=item * open-to-guests (bool)
+
+=item * active-token-value (string; requires C<open-to-guests> is true)
+
+=item * updated-at (iso8601 datetime; example: '2009-11-17T19:41:38Z')
+
+=item * created-at (iso8601 datetime)
+
+=back
+
+=cut
+
+net_api_method rooms => (
+    description => 'List all visible rooms for authenticated user',
+    method => 'GET',
+    path => '/rooms.xml',
+    authentication => 1,
+);
+
+=method room_presence() 
+
+This method returns an array of hashrefs representing the rooms in which the authenticated user is joined.
+The hashref has the same keys at the C<rooms()> method above.
+
+=cut
+
+net_api_method room_presence => (
+    description => 'List all rooms in which user is joined',
+    method => 'GET',
+    path => 'presence.xml',
+    authentication => 1,
+);
+
+=method get_room()
+
+This method retrieves information about a specific room, including the users joined to that room. Requires
+a C<room_id> parameter. Returns an array of hashrefs with the same keys as in the C<rooms()> method 
+above.  User data is an array located at the C<users> hash key. See the C<get_user()> method for 
+information about user hashref keys.
+
+=cut
+
+net_api_method get_room => (
+    description => 'Get specific room information',
+    method => 'GET',
+    path => '/room/:room_id.xml';
+    params => [qw(room_id)],
+    required => [qw(room_id)],
+    authentication => 1,
 );
 
 
